@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type UserRole } from '@/lib/types';
@@ -30,55 +31,98 @@ const iconPaths: Record<string, string> = {
 export default function Sidebar({ role, userName }: SidebarProps) {
     const pathname = usePathname();
     const filtered = navItems.filter((item) => item.roles.includes(role));
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col z-40">
-            {/* Logo */}
-            <div className="p-6 border-b border-[var(--border-primary)]">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 className="text-sm font-bold gradient-text">ProcureFlow</h1>
-                        <p className="text-xs text-[var(--text-muted)]">Procurement Portal</p>
-                    </div>
-                </div>
-            </div>
+        <>
+            {/* Mobile hamburger button */}
+            <button
+                onClick={() => setIsOpen(true)}
+                className="fixed top-4 left-4 z-50 md:hidden p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-primary)] shadow-lg backdrop-blur-sm"
+                aria-label="Open menu"
+            >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
 
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {filtered.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href));
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`sidebar-link ${isActive ? 'active' : ''}`}
+            {/* Backdrop overlay (mobile only) */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside
+                className={`
+                    fixed left-0 top-0 h-screen w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col z-50
+                    transition-transform duration-300 ease-in-out
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                    md:translate-x-0
+                `}
+            >
+                {/* Logo + close button */}
+                <div className="p-6 border-b border-[var(--border-primary)]">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="text-sm font-bold gradient-text">ProcureFlow</h1>
+                                <p className="text-xs text-[var(--text-muted)]">Procurement Portal</p>
+                            </div>
+                        </div>
+                        {/* Close button (mobile only) */}
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="md:hidden p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors"
+                            aria-label="Close menu"
                         >
-                            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={iconPaths[item.icon]} />
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            {item.label}
-                        </Link>
-                    );
-                })}
-            </nav>
-
-            {/* User info */}
-            <div className="p-4 border-t border-[var(--border-primary)]">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-card)]">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                        {userName.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{userName}</p>
-                        <p className="text-xs text-[var(--text-muted)] capitalize">{role.replace('_', ' ')}</p>
+                        </button>
                     </div>
                 </div>
-            </div>
-        </aside>
+
+                {/* Navigation */}
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    {filtered.map((item) => {
+                        const isActive = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href));
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setIsOpen(false)}
+                                className={`sidebar-link ${isActive ? 'active' : ''}`}
+                            >
+                                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={iconPaths[item.icon]} />
+                                </svg>
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* User info */}
+                <div className="p-4 border-t border-[var(--border-primary)]">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-card)]">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                            {userName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[var(--text-primary)] truncate">{userName}</p>
+                            <p className="text-xs text-[var(--text-muted)] capitalize">{role.replace('_', ' ')}</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 }
